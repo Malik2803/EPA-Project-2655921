@@ -1,4 +1,3 @@
 venc/
 backend/venv/
-database1.db
 backend/instance/database1.db
