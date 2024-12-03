@@ -1,5 +1,6 @@
-import { ChakraProvider, Button, Stack, Container } from "@chakra-ui/react";
+import {Stack, Container } from "@chakra-ui/react";
 import Navbar from "./components/Navbar";
+import TaskGrid from "./components/TaskGrid";
 
 function App() {
   return (
@@ -7,6 +8,7 @@ function App() {
       <Navbar />
       <Container maxW={"1200px"} my={4}>
 
+        <TaskGrid />
       </Container>
     </Stack>
   );
