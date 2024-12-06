@@ -1,13 +1,13 @@
-import { Box, Button, Container, Flex, Text, useColorMode, useColorModeValue} from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Text, useColorMode, useColorModeValue, Image} from "@chakra-ui/react";
 import { IoMoon} from "react-icons/io5";
 import {LuSun} from "react-icons/lu";
 import { IoIosNotifications } from "react-icons/io";
 import CreateTaskModal from "./CreateTaskModal";
 
-const Navbar = () => {
+const Navbar = ({setTasks}) => {
     const { colorMode, toggleColorMode } = useColorMode()
     return  (
-    <Container maxW={"900px"}>
+    <Container maxW={"1200px"}>
         <Box
             px={4}
             my={4}
@@ -24,6 +24,7 @@ const Navbar = () => {
                     gap={6}
                     display={{base: "none", sm: "flex"}}
                 >
+                    <Image src= "/logo.svg" alt="FSC Logo" boxSize="90px" />
                     <Box>Home</Box>
                     <Box>Dashboard</Box>
                     <Box>Help</Box>
@@ -32,7 +33,7 @@ const Navbar = () => {
                     <Text fontSize={"lg"} fontWeight ={500} display={{base: "none", md: "block"}}>
           
                     </Text>
-                        <CreateTaskModal />
+                        <CreateTaskModal setTasks={setTasks} />
                         <Button> <IoIosNotifications size={20} /> </Button>
                         <Button onClick = {toggleColorMode}>
                         {colorMode === "light" ? <IoMoon /> : <LuSun size={20} />}

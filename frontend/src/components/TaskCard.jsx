@@ -1,47 +1,104 @@
-import { Card, CardBody, CardHeader, Heading, Text, Badge, Stack, Flex, IconButton } from '@chakra-ui/react';
+import React from 'react';
+import { Card, CardBody, CardHeader, Heading, Text, Badge, Stack, Flex, IconButton, useToast } from '@chakra-ui/react';
 import { BiTrash } from "react-icons/bi";
 import EditModal from './EditModal';
+import { BASE_URL } from "../HomePage";
 
-const TaskCard = ({ task }) => {
+const TaskCard = ({ task, setTasks }) => {
+  const toast = useToast();
+
+  // Function to delete task
+  const handleDeleteUser = async () => {
+    try {
+      const response = await fetch(BASE_URL + "/tasks/" + task.id, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
+      setTasks((prevTasks) => prevTasks.filter((t) => t.id !== task.id));
+      toast({
+        title: "Task deleted.",
+        description: "Task has been deleted successfully.",
+        status: "success",
+        duration: 4000,
+        position: "bottom-centre",
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "An error occurred.",
+        description: error.message,
+        status: "error",
+        duration: 4000,
+        position: "bottom-centre",
+        isClosable: true,
+      });
+    }
+  };
+
+  // Function to format date to dd/mm/yy
+  const formatDate = (dateString) => {
+    const options = { day: '2-digit', month: '2-digit', year: '2-digit' };
+    const date = new Date(dateString);
+    return isNaN(date) ? 'Invalid Date' : date.toLocaleDateString('en-GB', options);
+  };
+
   return (
     <Card>
       <CardHeader>
-        <Flex gap={4}> 
-            <Flex flex={"1"} gap={"4"} alignItems={"center"}>
-            <Heading as="h3" size="md">
+        <Flex gap={4}>
+          <Flex flex={"1"} gap={"4"} alignItems={"center"}>
+            <Stack spacing={1}>
+              <Heading as="h3" size="md">
                 {task.title}
-            </Heading>
-            </Flex>
-            <Flex>
-            <EditModal/>
+              </Heading>
+              <Text fontSize="sm" color="gray.500">
+                ID: {task.id}
+              </Text>
+            </Stack>
+          </Flex>
+          <Flex>
+            <EditModal task={task} setTasks={setTasks} />
             <IconButton
-                variant="ghost"
-                colorScheme="red"
-                size="sm"
-                aria-label="Delete Task"
-                icon={<BiTrash size={20} />}
+              variant="ghost"
+              colorScheme="red"
+              size="sm"
+              aria-label="Delete Task"
+              icon={<BiTrash size={20} />}
+              onClick={handleDeleteUser}
             />
-            </Flex>
+          </Flex>
         </Flex>
       </CardHeader>
       <CardBody>
         <Stack spacing={3}>
           <Text>{task.description}</Text>
-          <Text>
-            <strong>Assignee:</strong> {task.assignee}
-          </Text>
-          <Text>
-            <strong>Start Date:</strong> {task.startDate}
-          </Text>
-          <Text>
-            <strong>End Date:</strong> {task.endDate}
-          </Text>
-          <Badge colorScheme={task.priority === 'High' ? 'red' : task.priority === 'Medium' ? 'yellow' : 'green'}>
-            {task.priority}
-          </Badge>
-          <Badge colorScheme={task.status === 'In Progress' ? 'blue' : task.status === 'Pending' ? 'orange' : task.status === 'Complete' ? 'green' : 'red'}>
-            {task.status}
-          </Badge>
+          <Flex gap={2} alignItems="center">
+            <Badge colorScheme={task.priority === 'High' ? 'red' : task.priority === 'Medium' ? 'yellow' : 'green'}>
+              {task.priority} Priority
+            </Badge>
+            <Badge colorScheme={task.status === 'In Progress' ? 'blue' : task.status === 'Pending' ? 'orange' : task.status === 'Complete' ? 'green' : 'red'}>
+              {task.status}
+            </Badge>
+          </Flex>
+          <Flex gap={2}>
+            <Text>
+              <strong>Assignee:</strong> {task.assignee}
+            </Text>
+            { <Text>
+              <strong>Team:</strong> {task.team}
+            </Text>}
+          </Flex>
+          <Flex gap={2}>
+            <Text>
+              <strong>Start Date:</strong> {formatDate(task.start_date)}
+            </Text>
+            <Text>
+              <strong>End Date:</strong> {formatDate(task.end_date)}
+            </Text>
+          </Flex>
         </Stack>
       </CardBody>
     </Card>
