@@ -14,7 +14,7 @@ const CreateTaskModal = ({ setTasks }) => {
     priority: "",
     status: "",
     assignee: "",
-    team: "",  // Set a default value for the team field
+    team: ""
   });
 
   const toast = useToast();
@@ -28,12 +28,25 @@ const CreateTaskModal = ({ setTasks }) => {
       priority: "",
       status: "",
       assignee: "",
-      team: ""  // Reset team field
+      team: ""
     });
   };
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
+
+    // Validate that end date/time is after start date/time
+    if (new Date(taskData.end_date) <= new Date(taskData.start_date)) {
+      toast({
+        title: "Validation Error",
+        description: "End date/time must be after start date/time",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch(BASE_URL + "/tasks", {
@@ -47,6 +60,7 @@ const CreateTaskModal = ({ setTasks }) => {
       if (!response.ok) {
         throw new Error(data.error);
       }
+      setTasks((prevTasks) => [...prevTasks, data]);
       toast({
         title: "Task created.",
         description: "Task has been created successfully.",
@@ -54,25 +68,14 @@ const CreateTaskModal = ({ setTasks }) => {
         duration: 2000,
         isClosable: true,
       });
+      resetForm();
       onClose();
-      setTasks((prevTasks) => [...prevTasks, data]);
-
-      setTaskData({
-        title: "",
-        description: "",
-        start_date: "",
-        end_date: "",
-        priority: "",
-        status: "",
-        assignee: "",
-        team: "",  // Reset team field to default value
-      });
     } catch (error) {
       toast({
         title: "An error occurred.",
         description: error.message,
         status: "error",
-        duration: 2000,
+        duration: 10000,
         isClosable: true,
       });
     } finally {
@@ -87,7 +90,7 @@ const CreateTaskModal = ({ setTasks }) => {
 
   return (
     <>
-      <Button onClick={onOpen} leftIcon={<BiAddToQueue />} iconSpacing={0} size="lg">
+      <Button onClick={onOpen} leftIcon={<BiAddToQueue />} iconSpacing={0} size="md">
       </Button>
 
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -100,7 +103,7 @@ const CreateTaskModal = ({ setTasks }) => {
               <FormControl>
                 <FormLabel>Task Name</FormLabel>
                 <Input
-                  name="title"
+                  name="Task Name"
                   placeholder="e.g Openshift Upgrade v1.13.1"
                   value={taskData.title}
                   onChange={(e) => setTaskData({ ...taskData, title: e.target.value })}
@@ -117,23 +120,25 @@ const CreateTaskModal = ({ setTasks }) => {
                 />
               </FormControl>
 
-              <HStack spacing={4} mt={4}>
+              <HStack spacing={2} mt={4}>
                 <FormControl>
-                  <FormLabel>Start Date</FormLabel>
+                  <FormLabel>Start Date/Time</FormLabel>
                   <Input
-                    type="date"
+                    type="datetime-local"
                     name="start_date"
                     value={taskData.start_date}
                     onChange={(e) => setTaskData({ ...taskData, start_date: e.target.value })}
+                          maxWidth="200px"
                   />
                 </FormControl>
                 <FormControl>
-                  <FormLabel>End Date</FormLabel>
+                  <FormLabel>End Date/Time</FormLabel>
                   <Input
-                    type="date"
+                    type="datetime-local"
                     name="end_date"
                     value={taskData.end_date}
                     onChange={(e) => setTaskData({ ...taskData, end_date: e.target.value })}
+                    maxWidth="200px"
                   />
                 </FormControl>
               </HStack>
@@ -187,9 +192,9 @@ const CreateTaskModal = ({ setTasks }) => {
                     value={taskData.team}
                     onChange={(e) => setTaskData({ ...taskData, team: e.target.value })}
                   >
-                    <option value="team1">Team 1</option>
-                    <option value="team2">Team 2</option>
-                    <option value="team3">Team 3</option>
+                    <option value="Team 1">Team 1</option>
+                    <option value="Team 2">Team 2</option>
+                    <option value="Team 3">Team 3</option>
                   </Select>
                 </FormControl>
               </HStack>

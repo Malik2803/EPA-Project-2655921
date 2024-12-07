@@ -38,11 +38,11 @@ const TaskCard = ({ task, setTasks }) => {
     }
   };
 
-  // Function to format date to dd/mm/yy
-  const formatDate = (dateString) => {
-    const options = { day: '2-digit', month: '2-digit', year: '2-digit' };
+  // Function to format date and time to dd/mm/yy hh:mm
+  const formatDateTime = (dateString) => {
+    const options = { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' };
     const date = new Date(dateString);
-    return isNaN(date) ? 'Invalid Date' : date.toLocaleDateString('en-GB', options);
+    return isNaN(date) ? 'Invalid Date' : date.toLocaleDateString('en-GB', options).replace(',', '');
   };
 
   return (
@@ -83,7 +83,7 @@ const TaskCard = ({ task, setTasks }) => {
               {task.status}
             </Badge>
           </Flex>
-          <Flex gap={2}>
+          <Flex gap={15}>
             <Text>
               <strong>Assignee:</strong> {task.assignee}
             </Text>
@@ -93,10 +93,10 @@ const TaskCard = ({ task, setTasks }) => {
           </Flex>
           <Flex gap={2}>
             <Text>
-              <strong>Start Date:</strong> {formatDate(task.start_date)}
+                <strong>Start:</strong> {formatDateTime(task.start_date)}
             </Text>
             <Text>
-              <strong>End Date:</strong> {formatDate(task.end_date)}
+                <strong>End:</strong> {formatDateTime(task.end_date)}
             </Text>
           </Flex>
         </Stack>

@@ -32,7 +32,6 @@ const EditModal = ({task,setTasks}) => {
       if (!response.ok) {
         throw new Error(data.error);
       }
-      setTasks((prevTasks) => prevTasks.map((t) => (t.id === task.id ? data : t)));
       toast({
         title: "Task updated.",
         description: "Task has been updated successfully.",
@@ -42,6 +41,8 @@ const EditModal = ({task,setTasks}) => {
         isClosable: true,
         });
         onClose();
+        setTasks((prevTasks) => prevTasks.map((t) => (t.id === task.id ? data : t)));
+
     } catch (error) {
       toast({
         title: "An error occurred.",
@@ -95,21 +96,23 @@ const EditModal = ({task,setTasks}) => {
 
             <HStack spacing={4} mt={4}>
               <FormControl>
-                <FormLabel>Start Date</FormLabel>
+                <FormLabel>Start Date/Time</FormLabel>
                 <Input
-                  type="date"
+                  type="datetime-local"
                   name="start_date"
                   value={taskData.start_date}
                   onChange={(e) => setTaskData({ ...taskData, start_date: e.target.value })}
+                  maxWidth="200px"
                   />
               </FormControl>
               <FormControl>
-                <FormLabel>End Date</FormLabel>
+                <FormLabel>End Date/Time</FormLabel>
                 <Input
-                  type="date"
+                  type="datetime-local"
                   name="end_date"
                   value={taskData.end_date}
                   onChange={(e) => setTaskData({ ...taskData, end_date: e.target.value })}
+                  maxWidth="200px"
                   />
               </FormControl>
             </HStack>
@@ -152,7 +155,7 @@ const EditModal = ({task,setTasks}) => {
                   name="assignee"
                   placeholder="Assignee"
                   value={taskData.assignee}
-                  onChange={(e) => setTaskData({ ...taskData, asignee: e.target.value })}
+                  onChange={(e) => setTaskData({ ...taskData, assignee: e.target.value })}
                   />
               </FormControl>
 
