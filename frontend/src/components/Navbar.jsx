@@ -6,6 +6,11 @@ import CreateTaskModal from "./CreateTaskModal";
 
 const Navbar = ({setTasks}) => {
     const { colorMode, toggleColorMode } = useColorMode()
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        window.location.href = '/login';  // Redirect to the login page
+      };
     return  (
     <Container maxW={"1200px"}>
         <Box
@@ -38,7 +43,7 @@ const Navbar = ({setTasks}) => {
                         <Button onClick = {toggleColorMode}>
                         {colorMode === "light" ? <IoMoon /> : <LuSun size={20} />}
                         </Button>
-                        <Button colorScheme={"blue"}>Logout</Button>
+                        <Button colorScheme={"blue"} onClick={logout}>Logout</Button>
                 
  
                 </Flex>

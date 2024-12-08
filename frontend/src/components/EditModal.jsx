@@ -3,7 +3,7 @@ import { Button, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, 
 import { BiEditAlt } from "react-icons/bi";
 import { BASE_URL } from "../HomePage";
 
-const EditModal = ({task,setTasks}) => {
+const EditModal = ({ task, setTasks }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isLoading, setIsLoading] = useState(false);
   const [taskData, setTaskData] = useState({
@@ -17,14 +17,17 @@ const EditModal = ({task,setTasks}) => {
     team: task.team
   });
   const toast = useToast();
+
   const handleTaskUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(BASE_URL + "/tasks/" + task.id, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(taskData),
       });
@@ -39,10 +42,9 @@ const EditModal = ({task,setTasks}) => {
         duration: 3000,
         position: "bottom-centre",
         isClosable: true,
-        });
-        onClose();
-        setTasks((prevTasks) => prevTasks.map((t) => (t.id === task.id ? data : t)));
-
+      });
+      onClose();
+      setTasks((prevTasks) => prevTasks.map((t) => (t.id === task.id ? data : t)));
     } catch (error) {
       toast({
         title: "An error occurred.",

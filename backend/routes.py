@@ -2,8 +2,10 @@ from app import app, db
 from flask import request, jsonify
 from models import User, Task
 from datetime import datetime
+from datetime import *
 import jwt
 import datetime
+from dateutil import parser
 
 SECRET_KEY='mysecretkey'
 # Get all Users
@@ -64,7 +66,7 @@ def login():
 
         token = jwt.encode({
             'user_id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=10)
         }, SECRET_KEY, algorithm='HS256')
 
         return jsonify({'token': token}), 200
@@ -102,9 +104,13 @@ def update_user(id):
 # Get all Tasks
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
-    tasks = Task.query.all()
-    result = [task.to_json() for task in tasks]
-    return jsonify(result)
+    try:
+        tasks = Task.query.all()
+        result = [task.to_json() for task in tasks]
+        return jsonify(result), 200
+    except Exception as e:
+        app.logger.error(f"Error fetching tasks: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # Create a new Task
 @app.route('/api/tasks', methods=['POST'])
@@ -119,11 +125,11 @@ def create_task():
         title = data.get("title")
         description = data.get("description")
         status = data.get("status")
-        start_date = datetime.fromisoformat(data.get("start_date"))
-        end_date = datetime.fromisoformat(data.get("end_date"))
+        start_date = parser.parse(data.get("start_date"))
+        end_date = parser.parse(data.get("end_date"))
         priority = data.get("priority")
         assignee = data.get("assignee")
-        team = data.get("team")  # Comment out the team field
+        team = data.get("team")  
 
         new_task = Task(
             title=title,
@@ -133,7 +139,7 @@ def create_task():
             end_date=end_date,
             priority=priority,
             assignee=assignee,
-            team=team  # Comment out the team field
+            team=team  
         )
 
         db.session.add(new_task)
@@ -157,8 +163,8 @@ def update_task(task_id):
         task.title = data.get("title", task.title)
         task.description = data.get("description", task.description)
         task.status = data.get("status", task.status)
-        task.start_date = datetime.fromisoformat(data.get("start_date"))
-        task.end_date = datetime.fromisoformat(data.get("start_date"))
+        start_date = parser.parse(data.get("start_date"))
+        end_date = parser.parse(data.get("end_date"))
         task.priority = data.get("priority", task.priority)
         task.assignee = data.get("assignee", task.assignee)
         task.team = data.get("team", task.team)  # Comment out the team field

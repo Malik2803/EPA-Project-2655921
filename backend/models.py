@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+import bcrypt
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -10,13 +11,12 @@ class User(db.Model):
     role = db.Column(db.String(50), nullable=False)
     gender = db.Column(db.String(10), nullable=False)
     img_url = db.Column(db.String(255), nullable=True)
-     # description = db.Column(db.Text, nullable=False)
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
 
     def to_json(self):
         return {
@@ -27,8 +27,6 @@ class User(db.Model):
             'role': self.role,
             'gender': self.gender,
             'imgUrl': self.img_url,
-            #  'description': self.description,
-
         }
 
 class Task(db.Model):
@@ -40,7 +38,7 @@ class Task(db.Model):
     end_date = db.Column(db.DateTime, nullable=False)
     priority = db.Column(db.String(50), nullable=False)
     assignee = db.Column(db.String(100), nullable=False)
-    team = db.Column(db.String(100), nullable=False)  # Comment out the team field
+    team = db.Column(db.String(100), nullable=False)  
 
     def to_json(self):
         return {
@@ -52,6 +50,6 @@ class Task(db.Model):
             'end_date': self.end_date.isoformat(),
             'priority': self.priority,
             'assignee': self.assignee,
-            'team': self.team,  # Comment out the team field in the JSON representation
+            'team': self.team, 
         }
 

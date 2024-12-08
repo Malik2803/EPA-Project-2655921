@@ -14,7 +14,7 @@ const CreateTaskModal = ({ setTasks }) => {
     priority: "",
     status: "",
     assignee: "",
-    team: ""
+    team: "",  // Set a default value for the team field
   });
 
   const toast = useToast();
@@ -28,7 +28,7 @@ const CreateTaskModal = ({ setTasks }) => {
       priority: "",
       status: "",
       assignee: "",
-      team: ""
+      team: ""  // Reset team field
     });
   };
 
@@ -60,7 +60,6 @@ const CreateTaskModal = ({ setTasks }) => {
       if (!response.ok) {
         throw new Error(data.error);
       }
-      setTasks((prevTasks) => [...prevTasks, data]);
       toast({
         title: "Task created.",
         description: "Task has been created successfully.",
@@ -68,14 +67,25 @@ const CreateTaskModal = ({ setTasks }) => {
         duration: 2000,
         isClosable: true,
       });
-      resetForm();
       onClose();
+      setTasks((prevTasks) => [...prevTasks, data]);
+
+      setTaskData({
+        title: "",
+        description: "",
+        start_date: "",
+        end_date: "",
+        priority: "",
+        status: "",
+        assignee: "",
+        team: "",  // Reset team field to default value
+      });
     } catch (error) {
       toast({
         title: "An error occurred.",
         description: error.message,
         status: "error",
-        duration: 10000,
+        duration: 3000,
         isClosable: true,
       });
     } finally {

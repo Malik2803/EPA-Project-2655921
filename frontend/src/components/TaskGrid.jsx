@@ -2,15 +2,42 @@ import { useEffect, useState } from 'react';
 import { Grid, Flex, Spinner, Text } from '@chakra-ui/react';
 import TaskCard from './TaskCard';
 import PropTypes from 'prop-types';
-import {BASE_URL} from "../HomePage";
-
+import { BASE_URL } from '../HomePage';
 const TaskGrid = ({ tasks, setTasks }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getTasks = async () => {
       try {
-        const response = await fetch(BASE_URL + "/tasks");
+        const token = localStorage.getItem('token');
+        console.log("Token:", token);  // Debugging log
+        const response = await fetch(BASE_URL + "/tasks", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        console.log("Response status:", response.status);  // Debugging log
+        const data = await response.json();
+        console.log("Response data:", data);  // Debugging log
+        if (!response.ok) {
+          throw new Error(data.error);
+        }
+        setTasks(data);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      } finally {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000);
+      }
+    };
+    getTasks();
+  }, [setTasks]); 
+
+/*   useEffect(() => {
+    const getTasks = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/tasks");
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data.error);
@@ -26,8 +53,8 @@ const TaskGrid = ({ tasks, setTasks }) => {
       }
     };
     getTasks();
-  }, [setTasks]);
-
+  }, [setTasks]); */
+ 
   return (
     <>
       {isLoading ? (
@@ -59,11 +86,6 @@ const TaskGrid = ({ tasks, setTasks }) => {
         )}
     </>
   );
-};
-
-TaskGrid.propTypes = {
-  tasks: PropTypes.array.isRequired,
-  setTasks: PropTypes.func.isRequired,
 };
 
 export default TaskGrid;
