@@ -9,14 +9,13 @@ const AuthPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState('');
   const [gender, setGender] = useState('');
   const toast = useToast();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-/*     if (!username || !password) {
+    if (!username || !password) {
       toast({
         title: "Error",
         description: "Please fill in all fields.",
@@ -25,10 +24,12 @@ const AuthPage = () => {
         isClosable: true,
       });
       return;
-    } */
+    }    
     try {
       const response = await axios.post('http://localhost:5000/api/login', { username, password });
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('role', response.data.role);
+      console.log("User role:", response.data.role);  // Log the user role
       toast({
         title: "Login successful.",
         status: "success",
@@ -49,7 +50,7 @@ const AuthPage = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!username || !email || !password || !name || !role || !gender) {
+    if (!username || !email || !password || !name || !gender) {
       toast({
         title: "Error",
         description: "Please fill in all fields.",
@@ -60,7 +61,7 @@ const AuthPage = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:5000/api/users', { username, email, password, name, role, gender });
+      await axios.post('http://localhost:5000/api/users', { username, email, password, name, gender});
       toast({
         title: "Registration successful.",
         status: "success",
@@ -110,6 +111,10 @@ const AuthPage = () => {
           <form onSubmit={handleRegister}>
             <VStack spacing={4}>
               <FormControl>
+                <FormLabel>Name</FormLabel>
+                <Input value={name} onChange={(e) => setName(e.target.value)} />
+              </FormControl>
+              <FormControl>
                 <FormLabel>Username</FormLabel>
                 <Input value={username} onChange={(e) => setUsername(e.target.value)} />
               </FormControl>
@@ -122,27 +127,17 @@ const AuthPage = () => {
                 <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </FormControl>
               <FormControl>
-                <FormLabel>Name</FormLabel>
-                <Input value={name} onChange={(e) => setName(e.target.value)} />
+                <FormLabel>Gender</FormLabel>
+                <RadioGroup onChange={setGender} value={gender}>
+                  <Stack direction="row">
+                    <Radio value="male">Male</Radio>
+                    <Radio value="female">Female</Radio>
+                  </Stack>
+                </RadioGroup>
               </FormControl>
-              <FormControl>
-                <FormLabel>Role</FormLabel>
-                <Input value={role} onChange={(e) => setRole(e.target.value)} />
-              </FormControl>
-              <HStack width="95%" justifyContent="space-between">
-                <FormControl>
-                  <FormLabel></FormLabel>
-                  <RadioGroup onChange={setGender} value={gender}>
-                    <Stack direction="row">
-                      <Radio value="male">Male</Radio>
-                      <Radio value="female">Female</Radio>
-                    </Stack>
-                  </RadioGroup>
-                </FormControl>
-                <Button type="submit" colorScheme="blue" width = "60%">
-                  Register
-                </Button>
-              </HStack>
+              <Button type="submit" colorScheme="blue">
+                Register
+              </Button>
               <HStack>
                 <Button variant="link" onClick={() => setIsLogin(true)}>
                   Already have an account? Sign in here

@@ -7,11 +7,12 @@ export const BASE_URL = "http://localhost:5000/api";
 
 function HomePage() {
     const [tasks, setTasks] = useState([]);
+    const [filters, setFilters] = useState({ priority: '', status: '' });
     return (
         <Stack minH={"100vh"}>
-            <Navbar setTasks={setTasks} />
+            <Navbar setTasks={setTasks} setFilters={setFilters} />
             <Container maxW={"1200px"} my={4}>
-            <TaskGrid tasks={tasks} setTasks={setTasks} />
+            <TaskGrid tasks={tasks} setTasks={setTasks} filters={filters}/>
       </Container>
     </Stack>
   );

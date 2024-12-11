@@ -1,6 +1,7 @@
 from app import db
-from datetime import datetime
+from datetime import datetime, timedelta
 import bcrypt
+import jwt
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -8,7 +9,8 @@ class User(db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    role = db.Column(db.String(50), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
+    role = db.relationship('Role', backref=db.backref('users', lazy=True))
     gender = db.Column(db.String(10), nullable=False)
     img_url = db.Column(db.String(255), nullable=True)
 
@@ -24,10 +26,20 @@ class User(db.Model):
             'username': self.username,
             'email': self.email,
             'name': self.name,
-            'role': self.role,
+            'role': self.role.role_name,
             'gender': self.gender,
             'imgUrl': self.img_url,
         }
+
+    @staticmethod
+    def verify_auth_token(token):
+        try:
+            data = jwt.decode(token, 'mysecretkey', algorithms=['HS256'])
+            print("Decoded token data:", data)  # Log the decoded token data
+            return User.query.get(data['user_id'])
+        except Exception as e:
+            print("Token verification failed:", e)  # Log the error
+            return None
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,8 +49,9 @@ class Task(db.Model):
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
     priority = db.Column(db.String(50), nullable=False)
-    assignee = db.Column(db.String(100), nullable=False)
-    team = db.Column(db.String(100), nullable=False)  
+    assignee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    assignee = db.relationship('User', backref=db.backref('tasks', lazy=True))
+    team = db.Column(db.String(100), nullable=False)
 
     def to_json(self):
         return {
@@ -49,7 +62,17 @@ class Task(db.Model):
             'start_date': self.start_date.isoformat(),
             'end_date': self.end_date.isoformat(),
             'priority': self.priority,
-            'assignee': self.assignee,
-            'team': self.team, 
+            'assignee': self.assignee.username,
+            'team': self.team,
+        }
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    role_name = db.Column(db.String(50), nullable=False)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'role_name': self.role_name,
         }
 

@@ -1,11 +1,12 @@
 from app import app, db
 from flask import request, jsonify
-from models import User, Task
+from models import User, Task, Role
 from datetime import datetime
 from datetime import *
 import jwt
 import datetime
 from dateutil import parser
+from middleware import token_required, role_required
 
 SECRET_KEY='mysecretkey'
 # Get all Users
@@ -29,7 +30,9 @@ def create_user():
         email = data.get("email")
         password = data.get("password")
         name = data.get("name")
-        role = data.get("role")
+        role = Role.query.filter_by(role_name='user').first()
+        if not role:
+            return jsonify({'error': 'Default role not found'}), 500
         gender = data.get("gender")
 
         if User.query.filter_by(email=email).first() or User.query.filter_by(username=username).first():
@@ -101,23 +104,24 @@ def update_user(id):
         db.session.commit()
         return jsonify({"msg": "User updated successfully"}), 200
 
-# Get all Tasks
+# Get tasks assigned to the logged-in user
 @app.route('/api/tasks', methods=['GET'])
-def get_tasks():
-    try:
+@token_required
+def get_tasks(user):
+    if user.role.role_name == 'admin':
         tasks = Task.query.all()
-        result = [task.to_json() for task in tasks]
-        return jsonify(result), 200
-    except Exception as e:
-        app.logger.error(f"Error fetching tasks: {e}")
-        return jsonify({"error": str(e)}), 500
+    else:
+        tasks = Task.query.filter_by(assignee_id=user.id).all()
+    return jsonify([task.to_json() for task in tasks])
 
-# Create a new Task
+# Create a new task
 @app.route('/api/tasks', methods=['POST'])
-def create_task():
+@token_required
+@role_required('admin')
+def create_task(user):
     try:
         data = request.json
-        required_fields = ["title", "description", "status", "start_date", "end_date", "priority", "assignee","team"]
+        required_fields = ["title", "description", "status", "start_date", "end_date", "priority","assignee_id", "team"]
         for field in required_fields:
             if field not in data or not data.get(field):
                 return jsonify({"error": f"Missing {field} field"}), 400
@@ -128,7 +132,7 @@ def create_task():
         start_date = parser.parse(data.get("start_date"))
         end_date = parser.parse(data.get("end_date"))
         priority = data.get("priority")
-        assignee = data.get("assignee")
+        assignee_id = data.get("assignee_id")
         team = data.get("team")  
 
         new_task = Task(
@@ -138,9 +142,10 @@ def create_task():
             start_date=start_date,
             end_date=end_date,
             priority=priority,
-            assignee=assignee,
+            assignee_id=assignee_id,
             team=team  
         )
+
 
         db.session.add(new_task)
         db.session.commit()
@@ -152,7 +157,8 @@ def create_task():
 
 # Update an existing Task
 @app.route('/api/tasks/<int:task_id>', methods=['PUT'])
-def update_task(task_id):
+@token_required
+def update_task(user, task_id):
     try:
         data = request.json
         task = Task.query.get(task_id)
@@ -166,8 +172,8 @@ def update_task(task_id):
         start_date = parser.parse(data.get("start_date"))
         end_date = parser.parse(data.get("end_date"))
         task.priority = data.get("priority", task.priority)
-        task.assignee = data.get("assignee", task.assignee)
-        task.team = data.get("team", task.team)  # Comment out the team field
+        task.assignee_id = data.get("assignee_id", task.assignee_id)
+        task.team = data.get("team", task.team)  
 
         db.session.commit()
 
