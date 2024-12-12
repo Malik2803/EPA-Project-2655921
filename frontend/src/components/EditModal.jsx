@@ -117,9 +117,9 @@ const EditModal = ({ task, setTasks }) => {
               <FormControl>
                 <FormLabel>Priority</FormLabel>
                 <Select placeholder="Select Priority" value={priority} onChange={(e) => setPriority(e.target.value)}>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
                 </Select>
               </FormControl>
               <FormControl>
@@ -142,9 +142,9 @@ const EditModal = ({ task, setTasks }) => {
               <FormControl>
                 <FormLabel>Team</FormLabel>
                 <Select placeholder="Select Team" value={team} onChange={(e) => setTeam(e.target.value)}>
-                  <option value="team1">Team 1</option>
-                  <option value="team2">Team 2</option>
-                  <option value="team3">Team 3</option>
+                  <option value="Team 1">Team 1</option>
+                  <option value="Team 2">Team 2</option>
+                  <option value="Team 3">Team 3</option>
                 </Select>
               </FormControl>
               <FormControl>

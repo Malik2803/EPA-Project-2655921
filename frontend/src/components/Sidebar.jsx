@@ -1,21 +1,64 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Box, VStack, Text } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Box, VStack, Text, useColorModeValue, Flex, Icon } from '@chakra-ui/react';
+import { MdOutlineDashboard } from "react-icons/md";
+import { TbReportAnalytics } from "react-icons/tb";
+import { IoIosNotifications } from "react-icons/io";
 
 const Sidebar = () => {
+  const location = useLocation();
+  const [active, setActive] = useState(location.pathname);
+
+  const handleSetActive = (path) => {
+    setActive(path);
+  };
+
+  const bgColor = useColorModeValue("gray.200", "gray.700");
+  const activeBgColor = useColorModeValue("gray.300", "gray.600");
+
   return (
-    <Box w="250px" p="4" bg="gray.100" h="100vh" position="fixed">
-      <VStack align="start" spacing="4">
-        <Text fontSize="2xl" fontWeight="bold">My App</Text>
-        <Link to="/">
+    <Box w="250px" p="4" bg={bgColor} h="100vh" position="fixed">
+      <VStack align="start" spacing="6">
+        <Text fontSize="35" fontWeight="bold">FSC System</Text>
+        <Flex
+          as={Link}
+          to="/home"
+          align="center"
+          p="2"
+          borderRadius="md"
+          bg={active === '/home' ? activeBgColor : "transparent"}
+          onClick={() => handleSetActive('/home')}
+          _hover={{ bg: activeBgColor }}
+        >
+          <Icon as={MdOutlineDashboard} boxSize="6" mr="3" />
           <Text fontSize="lg">Dashboard</Text>
-        </Link>
-        <Link to="/reports">
+        </Flex>
+        <Flex
+          as={Link}
+          to="/reports"
+          align="center"
+          p="2"
+          borderRadius="md"
+          bg={active === '/reports' ? activeBgColor : "transparent"}
+          onClick={() => handleSetActive('/reports')}
+          _hover={{ bg: activeBgColor }}
+        >
+          <Icon as={TbReportAnalytics} boxSize="6" mr="3" />
           <Text fontSize="lg">Reports</Text>
-        </Link>
-        <Link to="/notifications">
+        </Flex>
+        <Flex
+          as={Link}
+          to="/notifications"
+          align="center"
+          p="2"
+          borderRadius="md"
+          bg={active === '/notifications' ? activeBgColor : "transparent"}
+          onClick={() => handleSetActive('/notifications')}
+          _hover={{ bg: activeBgColor }}
+        >
+          <Icon as={IoIosNotifications} boxSize="6" mr="3" />
           <Text fontSize="lg">Notifications</Text>
-        </Link>
+        </Flex>
       </VStack>
     </Box>
   );

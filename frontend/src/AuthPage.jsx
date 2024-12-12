@@ -29,7 +29,6 @@ const AuthPage = () => {
       const response = await axios.post('http://localhost:5000/api/login', { username, password });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('role', response.data.role);
-      console.log("User role:", response.data.role);  // Log the user role
       toast({
         title: "Login successful.",
         status: "success",

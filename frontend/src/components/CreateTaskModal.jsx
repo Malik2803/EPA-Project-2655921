@@ -15,9 +15,10 @@ const CreateTaskModal = ({ setTasks }) => {
   const [assignee, setAssignee] = useState('');
   const [usernames, setUsernames] = useState([]);
   const [userMap, setUserMap] = useState({});  // Map of usernames to user IDs
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [selectedSlot, setSelectedSlot] = useState('');
   const toast = useToast();
   const role = localStorage.getItem('role');  // Get user role from local storage
-  console.log("User role:", role);  // Log the user role
 
   useEffect(() => {
     const fetchUsernames = async () => {
@@ -45,8 +46,92 @@ const CreateTaskModal = ({ setTasks }) => {
 
     if (isOpen) {
       fetchUsernames();
+      fetchTasks();
     }
   }, [isOpen]);
+
+  const fetchTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(BASE_URL + "/tasks", {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
+      findAvailableSlots(data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
+  const findAvailableSlots = (tasks) => {
+    // Logic to find available slots based on existing tasks
+    const slots = [];
+    // Example: Find slots between existing tasks
+    for (let i = 0; i < tasks.length - 1; i++) {
+      const end = new Date(tasks[i].end_date);
+      const start = new Date(tasks[i + 1].start_date);
+      if (start > end) {
+        slots.push({ start, end });
+      }
+    }
+    setAvailableSlots(slots);
+  };
+
+  const findNextAvailableSlot = (tasks) => {
+    const workHoursStart = 9;
+    const workHoursEnd = 17;
+    const slotDuration = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+
+    let currentDate = new Date();
+    currentDate.setMinutes(0, 0, 0); // Reset minutes and seconds
+
+    while (true) {
+      const day = currentDate.getDay();
+      const hour = currentDate.getHours();
+
+      // Skip weekends
+      if (day === 0 || day === 6) {
+        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.setHours(workHoursStart);
+        continue;
+      }
+
+      // Skip non-working hours
+      if (hour < workHoursStart) {
+        currentDate.setHours(workHoursStart);
+      } else if (hour >= workHoursEnd) {
+        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.setHours(workHoursStart);
+        continue;
+      }
+
+      const slotStart = new Date(currentDate);
+      const slotEnd = new Date(slotStart.getTime() + slotDuration);
+
+      // Check if the slot is within working hours
+      if (slotEnd.getHours() > workHoursEnd) {
+        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.setHours(workHoursStart);
+        continue;
+      }
+
+      // Check for overlaps with existing tasks
+      const isOverlap = tasks.some(task =>
+        (new Date(task.start_date) < slotEnd && new Date(task.end_date) > slotStart)
+      );
+
+      if (!isOverlap) {
+        return { start: slotStart, end: slotEnd };
+      }
+
+      currentDate.setTime(slotEnd.getTime());
+    }
+  };
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
@@ -77,6 +162,33 @@ const CreateTaskModal = ({ setTasks }) => {
       clearForm();
     } catch (error) {
       console.error("Error creating task:", error);
+      toast({
+        title: "An error occurred.",
+        description: error.message || "Unexpected error occurred.",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleScheduleTask = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(BASE_URL + "/tasks", {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
+      const nextSlot = findNextAvailableSlot(data);
+      setStartDate(nextSlot.start.toISOString().slice(0, 16));
+      setEndDate(nextSlot.end.toISOString().slice(0, 16));
+    } catch (error) {
+      console.error("Error scheduling task:", error);
       toast({
         title: "An error occurred.",
         description: error.message || "Unexpected error occurred.",
@@ -128,9 +240,9 @@ const CreateTaskModal = ({ setTasks }) => {
               <FormControl>
                 <FormLabel>Priority</FormLabel>
                 <Select placeholder="Select Priority" value={priority} onChange={(e) => setPriority(e.target.value)}>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
                 </Select>
               </FormControl>
               <FormControl>
@@ -153,9 +265,9 @@ const CreateTaskModal = ({ setTasks }) => {
               <FormControl>
                 <FormLabel>Team</FormLabel>
                 <Select placeholder="Select Team" value={team} onChange={(e) => setTeam(e.target.value)}>
-                  <option value="team1">Team 1</option>
-                  <option value="team2">Team 2</option>
-                  <option value="team3">Team 3</option>
+                  <option value="Team 1">Team 1</option>
+                  <option value="Team 2">Team 2</option>
+                  <option value="Team 3">Team 3</option>
                 </Select>
               </FormControl>
               <FormControl>
@@ -171,6 +283,9 @@ const CreateTaskModal = ({ setTasks }) => {
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={handleCreateTask}>
               Create
+            </Button>
+            <Button colorScheme="green" mr={3} onClick={handleScheduleTask}>
+              Auto-Schedule
             </Button>
             <Button variant="ghost" onClick={handleClose}>Cancel</Button>
           </ModalFooter>

@@ -76,7 +76,7 @@ const TaskCard = ({ task, setTasks }) => {
         <Stack spacing={3}>
           <Text>{task.description}</Text>
           <Flex gap={2} alignItems="center">
-            <Badge colorScheme={task.priority === 'high' ? 'red' : task.priority === 'medium' ? 'yellow' : 'green'}>
+            <Badge colorScheme={task.priority === 'High' ? 'red' : task.priority === 'Medium' ? 'yellow' : 'green'}>
               {task.priority} Priority
             </Badge>
             <Badge colorScheme={task.status === 'In Progress' ? 'blue' : task.status === 'Pending' ? 'orange' : task.status === 'Complete' ? 'green' : 'red'}>

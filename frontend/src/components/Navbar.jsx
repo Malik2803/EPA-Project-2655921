@@ -20,10 +20,9 @@ const Navbar = ({ setTasks, setFilters }) => {
         <Flex h="16" alignItems={"center"} justifyContent={"space-between"}>
           <Flex alignItems={"center"} justifyContent={"center"} gap={6} display={{ base: "none", sm: "flex" }}>
             <Image src="/logo.svg" alt="FSC Logo" boxSize="90px" />
-            <Box>Home</Box>
-            <Box>Dashboard</Box>
-            <Box>Manage Users</Box>
-            <Box>Help</Box>
+            <Text fontSize={"lg"} fontWeight={500} display={{ base: "none", md: "block" }}>
+							Welcome to FSC System
+						</Text>
           </Flex>
           <Flex gap={3} alignItems={"center"}>
             <CreateTaskModal setTasks={setTasks} />
