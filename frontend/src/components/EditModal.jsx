@@ -50,9 +50,62 @@ const EditModal = ({ task, setTasks }) => {
   const handleTaskUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+
+    // Validation to ensure no field is empty
+    if (!title || !description || !priority || !status || !startDate || !endDate || !team || !assignee) {
+      toast({
+        title: "Error",
+        description: "All fields are required.",
+        status: "error",
+        duration: 3000,
+        position: "bottom-centre",
+        isClosable: true,
+      });
+      setIsLoading(false);
+      return;
+    }
+    // Validation to ensure end date/time is after start date/time
+  if (new Date(endDate) <= new Date(startDate)) {
+    toast({
+      title: "Error",
+      description: "End date/time must be after start date/time.",
+      status: "error",
+      duration: 3000,
+      position: "bottom-centre",
+      isClosable: true,
+    });
+    setIsLoading(false);
+    return;
+  }
+
     try {
       const token = localStorage.getItem('token');
       const assignee_id = userMap[assignee];  // Map assignee to assignee_id
+
+      // Check for overlapping tasks
+      const overlapResponse = await fetch(BASE_URL + "/check-overlap", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ assignee_id, start_date: startDate, end_date: endDate, task_id: task.id }),  // Include task ID
+      });
+      const overlapData = await overlapResponse.json();
+      if (overlapData.overlap) {
+        toast({
+          title: "Error",
+          description: "The assignee already has a task assigned during the specified time.",
+          status: "error",
+          duration: 3000,
+          position: "bottom-centre",
+          isClosable: true,
+        });
+        setIsLoading(false);
+        return;
+      }
+
+
       const response = await fetch(`${BASE_URL}/tasks/${task.id}`, {
         method: "PUT",
         headers: {

@@ -29,6 +29,7 @@ const AuthPage = () => {
       const response = await axios.post('http://localhost:5000/api/login', { username, password });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('role', response.data.role);
+      localStorage.setItem('userId', response.data.userId);
       toast({
         title: "Login successful.",
         status: "success",
@@ -83,7 +84,7 @@ const AuthPage = () => {
     <Center minH="100vh">
       <Box width = "30%" mx="auto" mt={8} p={6} borderWidth={3} borderRadius="lg">
         <Heading as="h2" size="lg" mb={6} textAlign="center">
-          {isLogin ? "Sign In" : "Sign Up"}
+          {isLogin ? "Sign in to the FSC System" : "Sign Up"}
         </Heading>
         {isLogin ? (
           <form onSubmit={handleLogin}>

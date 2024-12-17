@@ -79,7 +79,7 @@ const TaskCard = ({ task, setTasks }) => {
             <Badge colorScheme={task.priority === 'High' ? 'red' : task.priority === 'Medium' ? 'yellow' : 'green'}>
               {task.priority} Priority
             </Badge>
-            <Badge colorScheme={task.status === 'In Progress' ? 'blue' : task.status === 'Pending' ? 'orange' : task.status === 'Complete' ? 'green' : 'red'}>
+            <Badge colorScheme={task.status === 'In Progress' ? 'blue' : task.status === 'Pending' ? 'orange' : task.status === 'Completed' ? 'green' : 'red'}>
               {task.status}
             </Badge>
           </Flex>

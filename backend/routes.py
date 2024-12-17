@@ -1,6 +1,6 @@
 from app import app, db
-from flask import request, jsonify
-from models import User, Task, Role
+from flask import request, jsonify, Blueprint
+from models import User, Task, Role, Notification
 from datetime import datetime
 from datetime import *
 import jwt
@@ -72,7 +72,7 @@ def login():
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=10)
         }, SECRET_KEY, algorithm='HS256')
 
-        return jsonify({'token': token}), 200
+        return jsonify({'token': token, 'userId': user.id, 'role': user.role.role_name}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -150,6 +150,14 @@ def create_task(user):
         db.session.add(new_task)
         db.session.commit()
 
+         # Create a notification for the assignee
+        notification = Notification(
+            user_id=assignee_id,
+            message=f"You have been assigned a new task: {title}"
+        )
+        db.session.add(notification)
+        db.session.commit()
+
         return jsonify(new_task.to_json()), 201
     except Exception as e:
         db.session.rollback()
@@ -166,14 +174,36 @@ def update_task(user, task_id):
         if not task:
             return jsonify({"error": "Task not found"}), 404
 
+        # Track changes
+        status_changed = task.status != data.get("status", task.status)
+        priority_changed = task.priority != data.get("priority", task.priority)
+
+        # Update task fields
         task.title = data.get("title", task.title)
         task.description = data.get("description", task.description)
         task.status = data.get("status", task.status)
-        start_date = parser.parse(data.get("start_date"))
-        end_date = parser.parse(data.get("end_date"))
+        task.start_date = parser.parse(data.get("start_date"))
+        task.end_date = parser.parse(data.get("end_date"))
         task.priority = data.get("priority", task.priority)
         task.assignee_id = data.get("assignee_id", task.assignee_id)
-        task.team = data.get("team", task.team)  
+        task.team = data.get("team", task.team)
+
+        db.session.commit()
+
+        # Create notifications for changes
+        if status_changed:
+            notification = Notification(
+                user_id=task.assignee_id,
+                message=f"Task '{task.title}' status has been changed to '{task.status}'."
+            )
+            db.session.add(notification)
+
+        if priority_changed:
+            notification = Notification(
+                user_id=task.assignee_id,
+                message=f"Task '{task.title}' priority has been changed to '{task.priority}'."
+            )
+            db.session.add(notification)
 
         db.session.commit()
 
@@ -191,10 +221,67 @@ def delete_task(task_id):
         if not task:
             return jsonify({"error": "Task not found"}), 404
 
+        assignee_id = task.assignee_id
+        task_title = task.title
+
         db.session.delete(task)
+        db.session.commit()
+
+        # Create a notification for the assignee
+        notification = Notification(
+            user_id=assignee_id,
+            message=f"Task '{task_title}' has been deleted."
+        )
+        db.session.add(notification)
         db.session.commit()
 
         return jsonify({"message": "Task deleted successfully"}), 200
     except Exception as e:
         db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Notifications
+@app.route('/api/notifications', methods=['POST'])
+def create_notification():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    message = data.get('message')
+    notification = Notification(user_id=user_id, message=message)
+    db.session.add(notification)
+    db.session.commit()
+    return jsonify(notification.to_json()), 201
+
+@app.route('/api/notifications/<int:user_id>', methods=['GET'])
+def get_notifications(user_id):
+    notifications = Notification.query.filter_by(user_id=user_id).all()
+    return jsonify([notification.to_json() for notification in notifications])
+
+@app.route('/api/notifications/<int:notification_id>', methods=['DELETE'])
+def delete_notification(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    db.session.delete(notification)
+    db.session.commit()
+    return '', 204
+
+@app.route('/api/check-overlap', methods=['POST'])
+def check_overlap():
+    try:
+        data = request.json
+        assignee_id = data.get('assignee_id')
+        start_date = parser.parse(data.get('start_date'))
+        end_date = parser.parse(data.get('end_date'))
+        task_id = data.get('task_id')  # Get the task ID
+
+        overlapping_task = Task.query.filter(
+            Task.assignee_id == assignee_id,
+            Task.start_date < end_date,
+            Task.end_date > start_date,
+            Task.id != task_id  # Exclude the current task
+        ).first()
+
+        if overlapping_task:
+            return jsonify({'overlap': True}), 200
+        else:
+            return jsonify({'overlap': False}), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 500

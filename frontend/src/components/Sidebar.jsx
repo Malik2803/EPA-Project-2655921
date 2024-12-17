@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Box, VStack, Text, useColorModeValue, Flex, Icon } from '@chakra-ui/react';
+import { Box, VStack, Text, useColorModeValue, Flex, Icon, Spacer } from '@chakra-ui/react';
 import { MdOutlineDashboard } from "react-icons/md";
 import { TbReportAnalytics } from "react-icons/tb";
 import { IoIosNotifications } from "react-icons/io";
+import { IoIosSettings } from "react-icons/io";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -18,7 +19,7 @@ const Sidebar = () => {
 
   return (
     <Box w="250px" p="4" bg={bgColor} h="100vh" position="fixed">
-      <VStack align="start" spacing="6">
+      <VStack align="start" spacing="6" height="100%">
         <Text fontSize="35" fontWeight="bold">FSC System</Text>
         <Flex
           as={Link}
@@ -58,6 +59,20 @@ const Sidebar = () => {
         >
           <Icon as={IoIosNotifications} boxSize="6" mr="3" />
           <Text fontSize="lg">Notifications</Text>
+        </Flex>
+        <Spacer />
+        <Flex
+          as={Link}
+          to="/settings"
+          align="center"
+          p="2"
+          borderRadius="md"
+          bg={active === '/settings' ? activeBgColor : "transparent"}
+          onClick={() => handleSetActive('/settings')}
+          _hover={{ bg: activeBgColor }}
+        >
+          <Icon as={IoIosSettings} boxSize="6" mr="3" />
+          <Text fontSize="lg">Settings</Text>
         </Flex>
       </VStack>
     </Box>

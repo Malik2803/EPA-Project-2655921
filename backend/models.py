@@ -1,5 +1,5 @@
 from app import db
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import bcrypt
 import jwt
 
@@ -75,4 +75,20 @@ class Role(db.Model):
             'id': self.id,
             'role_name': self.role_name,
         }
+    
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('notifications', lazy=True))
+    message = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(50), default='unread')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
+    def to_json(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'message': self.message,
+            'status': self.status,
+            'created_at': self.created_at.isoformat(),
+        }

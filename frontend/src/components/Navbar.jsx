@@ -4,9 +4,8 @@ import { LuSun } from "react-icons/lu";
 import { IoIosNotifications } from "react-icons/io";
 import CreateTaskModal from "./CreateTaskModal";
 import FilterModal from "./FilterModal";
-import { useState } from "react";
 
-const Navbar = ({ setTasks, setFilters }) => {
+const Navbar = ({ tasks,setTasks, setFilters }) => {
   const { colorMode, toggleColorMode } = useColorMode();
 
   const logout = () => {
@@ -25,7 +24,7 @@ const Navbar = ({ setTasks, setFilters }) => {
 						</Text>
           </Flex>
           <Flex gap={3} alignItems={"center"}>
-            <CreateTaskModal setTasks={setTasks} />
+            <CreateTaskModal setTasks={setTasks} tasks={tasks} />
             <FilterModal setFilters={setFilters} />
             <Button> <IoIosNotifications size={20} /> </Button>
             <Button onClick={toggleColorMode}>

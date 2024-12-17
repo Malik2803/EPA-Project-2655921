@@ -3,7 +3,7 @@ import { Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, Mo
 import { BASE_URL } from '../HomePage';
 import { BiAddToQueue } from "react-icons/bi";
 
-const CreateTaskModal = ({ setTasks }) => {
+const CreateTaskModal = ({ tasks, setTasks }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -44,44 +44,8 @@ const CreateTaskModal = ({ setTasks }) => {
       }
     };
 
-    if (isOpen) {
-      fetchUsernames();
-      fetchTasks();
-    }
-  }, [isOpen]);
-
-  const fetchTasks = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(BASE_URL + "/tasks", {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error);
-      }
-      findAvailableSlots(data);
-    } catch (error) {
-      console.error("Error fetching tasks:", error);
-    }
-  };
-
-  const findAvailableSlots = (tasks) => {
-    // Logic to find available slots based on existing tasks
-    const slots = [];
-    // Example: Find slots between existing tasks
-    for (let i = 0; i < tasks.length - 1; i++) {
-      const end = new Date(tasks[i].end_date);
-      const start = new Date(tasks[i + 1].start_date);
-      if (start > end) {
-        slots.push({ start, end });
-      }
-    }
-    setAvailableSlots(slots);
-  };
-
+    fetchUsernames();
+  }, []);
   const findNextAvailableSlot = (tasks) => {
     const workHoursStart = 9;
     const workHoursEnd = 17;
@@ -133,11 +97,69 @@ const CreateTaskModal = ({ setTasks }) => {
     }
   };
 
+  const hasOverlappingTask = (tasks, assignee_id, startDate, endDate) => {
+    return tasks.some(task =>
+      task.assignee_id === assignee_id &&
+      ((new Date(task.start_date) < new Date(endDate) && new Date(task.end_date) > new Date(startDate)))
+    );
+  };
+
   const handleCreateTask = async (e) => {
     e.preventDefault();
+
+    // Validation to ensure no field is empty
+    if (!title || !description || !priority || !status || !startDate || !endDate || !team || !assignee) {
+      toast({
+        title: "Error",
+        description: "All fields are required.",
+        status: "error",
+        duration: 3000,
+        position: "bottom-centre",
+        isClosable: true,
+      });
+      return;
+    }
+
+      // Validation to ensure end date/time is after start date/time
+  if (new Date(endDate) <= new Date(startDate)) {
+    toast({
+      title: "Error",
+      description: "End date/time must be after start date/time.",
+      status: "error",
+      duration: 3000,
+      position: "bottom-centre",
+      isClosable: true,
+    });
+    return;
+  }
+
     try {
       const token = localStorage.getItem('token');
       const assignee_id = userMap[assignee];  // Map assignee to assignee_id
+
+      // Check for overlapping tasks
+      const overlapResponse = await fetch(BASE_URL + "/check-overlap", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ assignee_id, start_date: startDate, end_date: endDate }),
+      });
+      const overlapData = await overlapResponse.json();
+      if (overlapData.overlap) {
+        toast({
+          title: "Error",
+          description: "The assignee already has a task assigned during the specified time.",
+          status: "error",
+          duration: 3000,
+          position: "bottom-centre",
+          isClosable: true,
+        });
+        return;
+      }
+
+      // Create the task
       const response = await fetch(BASE_URL + "/tasks", {
         method: "POST",
         headers: {
@@ -161,12 +183,12 @@ const CreateTaskModal = ({ setTasks }) => {
       onClose();
       clearForm();
     } catch (error) {
-      console.error("Error creating task:", error);
       toast({
         title: "An error occurred.",
-        description: error.message || "Unexpected error occurred.",
+        description: error.message,
         status: "error",
-        duration: 2000,
+        duration: 3000,
+        position: "bottom-centre",
         isClosable: true,
       });
     }

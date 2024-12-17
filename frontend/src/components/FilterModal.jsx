@@ -73,9 +73,9 @@ const FilterDrawer = ({ setFilters }) => {
             <FormControl mt={4}>
               <FormLabel>Priority</FormLabel>
               <Select placeholder="Select Priority" value={priority} onChange={(e) => setPriority(e.target.value)}>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
               </Select>
             </FormControl>
             <FormControl mt={4}>
