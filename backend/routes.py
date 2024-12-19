@@ -21,11 +21,6 @@ def get_users():
 def create_user():
     try:
         data = request.json
-        #required_fields = ["title", "description", "status", "start_date", "end_date", "priority", "assignee","team"]
-        #for field in required_fields:
-            #if field not in data or not data.get(field):
-               # return jsonify({"error": f"Missing {field} field"}), 400
-
         username = data.get("username")
         email = data.get("email")
         password = data.get("password")
@@ -87,7 +82,7 @@ def delete_user(id):
         db.session.commit()
         return jsonify({"msg": "User deleted successfully"}), 200
     
-# Update a User UPDATE THIS CODE LATERRRRRRRRRRRRRRRLKAJDKANDJKASNBDJKAWNDJKBAJKSDBJAKBDJ
+# Update a User 
 @app.route('/api/users/<int:id>', methods=['PUT'])
 def update_user(id):
     user = User.query.get(id)
@@ -163,10 +158,9 @@ def create_task(user):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-# Update an existing Task
+# Update a Task
 @app.route('/api/tasks/<int:task_id>', methods=['PUT'])
-@token_required
-def update_task(user, task_id):
+def update_task(task_id):
     try:
         data = request.json
         task = Task.query.get(task_id)
@@ -251,11 +245,13 @@ def create_notification():
     db.session.commit()
     return jsonify(notification.to_json()), 201
 
+# Fetch Notifications for a User
 @app.route('/api/notifications/<int:user_id>', methods=['GET'])
 def get_notifications(user_id):
     notifications = Notification.query.filter_by(user_id=user_id).all()
     return jsonify([notification.to_json() for notification in notifications])
 
+# Delete a Notification
 @app.route('/api/notifications/<int:notification_id>', methods=['DELETE'])
 def delete_notification(notification_id):
     notification = Notification.query.get_or_404(notification_id)
@@ -263,6 +259,7 @@ def delete_notification(notification_id):
     db.session.commit()
     return '', 204
 
+# Check for Overlapping Tasks
 @app.route('/api/check-overlap', methods=['POST'])
 def check_overlap():
     try:

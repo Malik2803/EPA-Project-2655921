@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { IconButton, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, FormControl, FormLabel, Input, Select, Textarea, useDisclosure, useToast, Button } from '@chakra-ui/react';
+import { IconButton, Modal, ModalOverlay, SimpleGrid, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, FormControl, FormLabel, Input, Select, Textarea, useDisclosure, useToast, Button } from '@chakra-ui/react';
 import { BiEditAlt } from "react-icons/bi";
 import { BASE_URL } from '../HomePage';
+import { px } from 'framer-motion';
 
 const EditModal = ({ task, setTasks }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -97,7 +98,7 @@ const EditModal = ({ task, setTasks }) => {
           title: "Error",
           description: "The assignee already has a task assigned during the specified time.",
           status: "error",
-          duration: 3000,
+          duration: 4000,
           position: "bottom-centre",
           isClosable: true,
         });
@@ -155,10 +156,11 @@ const EditModal = ({ task, setTasks }) => {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <form onSubmit={handleTaskUpdate}>
-          <ModalContent>
+          <ModalContent maxWidth={"600px"}>
             <ModalHeader>Edit Task</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
+            <SimpleGrid columns={2} spacing={4}>
               <FormControl>
                 <FormLabel>Title</FormLabel>
                 <Input value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -208,6 +210,7 @@ const EditModal = ({ task, setTasks }) => {
                   ))}
                 </Select>
               </FormControl>
+              </SimpleGrid>
             </ModalBody>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} type="submit" isLoading={isLoading}>
