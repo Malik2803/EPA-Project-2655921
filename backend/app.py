@@ -23,4 +23,10 @@ if __name__ == '__main__':
     print(f"FLASK_ENV: {os.environ.get('FLASK_ENV')}")
     print(f"Debug mode: {app.debug}")
     app.run(debug=os.environ.get('FLASK_ENV') == 'development')
-    # app.run(debug=True)
+
+
+
+
+
+
+# Ref: https://www.youtube.com/watch?v=tWHXaSC2T_s&list=WL&index=2&t=7689s
