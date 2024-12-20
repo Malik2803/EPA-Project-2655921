@@ -29,4 +29,8 @@ if __name__ == '__main__':
 
 
 
-# Ref: https://www.youtube.com/watch?v=tWHXaSC2T_s&list=WL&index=2&t=7689s
+# Ref: 
+# - https://www.youtube.com/watch?v=tWHXaSC2T_s&list=WL&index=2&t=7689s
+# - https://www.chakra-ui.com/docs/components/concepts/overview
+# - https://www.npmjs.com/package/
+# - https://flask.palletsprojects.com/en/stable/
